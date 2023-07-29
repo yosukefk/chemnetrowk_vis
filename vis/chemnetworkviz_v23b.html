@@ -1,0 +1,315 @@
+<html>
+
+<head>
+  <link rel="stylesheet" href="./chemnetworkviz_v23b.css" type="text/css" > </style>
+</head>
+
+<body>
+
+<div class="controls">
+
+  <div class="force alpha">
+    <p><label>alpha</label> Simulation activity</p>
+    <div class="alpha_bar" onclick="updateAll();"><div id="alpha_value"></div></div>
+  </div>
+
+  <b>Force properties</b><br />
+
+  <p><label> <input id="forcepanel_Enabled", type="checkbox"         onchange="toggleForcepanel(); "> show/hide force properties </label> </p>
+
+  <div class="panel" id="forcepanel" style="display: none;">
+
+    <div class="force" id="sticky">
+      <p><label><input id="showSticky_Enabled1"  class="showSticky_Enabled"  type="checkbox" onchange="displayProperties.sticky.visible = this.checked; document.getElementsByClassName('showSticky_Enabled').checked = this.checked ; updateDisplay();"> sticky</label> Show/hide stuck nodes</p>
+        <p class="sticky_desc"> use ctrl+drag to make node stick.  use regular drag to release node </p>
+      <input type="button" value="release all sticky" onclick="releaseSticky(); updateAll();" />
+    </div>
+    
+    <div class="force" id="charge">
+      <p><label><input id="charge_Enabled", type="checkbox" checked onchange="forceProperties.charge.enabled = this.checked; updateAll();"> charge</label> Attracts (+) or repels (-) nodes to/from each other.</p>
+      <label title="Negative strength repels nodes. Positive strength attracts nodes.">
+        strength
+        <output id="charge_StrengthSliderOutput">-300</output>
+        <input id="charge_StrengthSliderInput", type="range" min="-1600" max="50" value="-300" step="2" oninput="d3.select('#charge_StrengthSliderOutput').text(value); forceProperties.charge.strength=value; updateAll();">
+      </label>
+      <label title="Minimum distance where force is applied">
+        distanceMin
+        <output id="charge_distanceMinSliderOutput">1</output>
+        <input id="charge_distanceMinSliderInput", type="range" min="0" max="50" value="1" step=".1" oninput="d3.select('#charge_distanceMinSliderOutput').text(value); forceProperties.charge.distanceMin=value; updateAll();">
+      </label>
+      <label title="Maximum distance where force is applied">
+        distanceMax
+        <output id="charge_distanceMaxSliderOutput">2000</output>
+        <input id="charge_distanceMaxSliderInput", type="range" min="0" max="2000" value="2000" step=".1" oninput="d3.select('#charge_distanceMaxSliderOutput').text(value); forceProperties.charge.distanceMax=value; updateAll();">
+      </label>
+    </div>
+
+    <div class="force" id="link">
+      <p><label><input id="link_Enabled", type="checkbox" checked onchange="forceProperties.link.enabled = this.checked; updateAll();"> link</label> Sets link length</p>
+      <label title="The force will push/pull nodes to make links this long">
+        distance
+        <output id="link_DistanceSliderOutput">30</output>
+        <input id="link_DistanceSliderInput", type="range" min="0" max="100" value="30" step="1" oninput="d3.select('#link_DistanceSliderOutput').text(value); forceProperties.link.distance=value; updateAll();">
+      </label>
+      <label title="Higher values increase rigidity of the links (WARNING: high values are computationally expensive)">
+        iterations
+        <output id="link_IterationsSliderOutput">1</output>
+        <input id="link_IterationsSliderInput", type="range" min="1" max="10" value="1" step="1" oninput="d3.select('#link_IterationsSliderOutput').text(value); forceProperties.link.iterations=value; updateAll();">
+      </label>
+    </div>
+
+    <div class="force" id="netprod">
+      <p><label><input id="netprod_Enabled", type="checkbox"         onchange="forceProperties.netprod.enabled = this.checked; updateAll();"> netprod</label> Force related to net production (cons -, prod +) </p>
+      <label title="larger values orients the material stronger (feed => left, product => right)">
+        strength
+        <output id="netprod_StrengthSliderOutput">3000</output>
+        <input id="netprod_StrengthSliderInput", type="range" min="0" max="8000" value="3000" step="10" oninput="d3.select('#netprod_StrengthSliderOutput').text(value); forceProperties.netprod.strength=value; updateAll();">
+      </label>
+    </div>
+
+    <div class="force" id="grossprod">
+      <p><label><input id="grossprod_Enabled", type="checkbox"         onchange="forceProperties.grossprod.enabled = this.checked; updateAll();"> grossprod</label> Force related to gross production (prod +) </p>
+      <label title="larger values orients the material stronger to right">
+        strength
+        <output id="grossprod_StrengthSliderOutput">3000</output>
+        <input id="grossprod_StrengthSliderInput", type="range" min="0" max="8000" value="3000" step="10" oninput="d3.select('#grossprod_StrengthSliderOutput').text(value); forceProperties.grossprod.strength=value; updateAll();">
+      </label>
+    </div>
+
+    <div class="force" id="grosscons">
+      <p><label><input id="grosscons_Enabled", type="checkbox" checked onchange="forceProperties.grosscons.enabled = this.checked; updateAll();"> grosscons</label> Force related to gross consumption (cons -) </p>
+      <label title="larger values orients the material stronger to left">
+        strength
+        <output id="grosscons_StrengthSliderOutput">1500</output>
+        <input id="grosscons_StrengthSliderInput", type="range" min="0" max="8000" value="1500" step="10" oninput="d3.select('#grosscons_StrengthSliderOutput').text(value); forceProperties.grosscons.strength=value; updateAll();">
+      </label>
+    </div>
+
+    <div class="force" id="supplydemand">
+      <p><label><input id="supplydemand_Enabled", type="checkbox" checked onchange="forceProperties.supplydemand.enabled = this.checked; updateAll();"> supplydemand</label> Force related to supply/demdna (supply -, demand +) </p>
+      <label title="larger values pull the material stronger (supply => higher, demand => lower)">
+        strength
+        <output id="supplydemand_StrengthSliderOutput">400</output>
+        <input id="supplydemand_StrengthSliderInput", type="range" min="0" max="1600" value="400" step="10" oninput="d3.select('#supplydemand_StrengthSliderOutput').text(value); forceProperties.supplydemand.strength=value; updateAll();">
+      </label>
+    </div>
+
+    <div class="force" id="forceprop">
+      <p><label> forceprop </label> Save all force properties </p>
+      <input type="button" value="save" onclick="exportForces();" />
+    </div>
+  </div> <!-- id="forcepanel" -->
+
+
+  <div class="panel series", id="panel_series">
+
+    <b>Series properties</b><br />
+
+    <div class="force" id="series">
+      <p><label> series </label> Series for graphs </p>
+      <label title="select a case out of series">
+        showing 
+        <output id="series_PositionSliderOutput">1</output>
+        <input id="series_PositionSliderInput", type="range" min="1" max="5" value="1" step="1" oninput="d3.select('#series_PositionSliderOutput').text(seriesProperties.series_labels[value-1]); seriesProperties.position=value; updateSeries();">
+      </label>
+    </div>
+
+    <div class="force" id="difference">
+      <p><label><input id="difference_Enabled" type="checkbox"         onchange="toggleDiffcontrols(this); updateDisplay(); ">difference</label> color code </p>
+      <p><label><input id="diffofdiff_Enabled" type="checkbox"         onchange="toggleDiffcontrols(this); updateDisplay(); ">difference of difference</label> color code, shows (A-B)-(C-D) </p>
+      <div id="diffcontrols">
+        <label id="label_ReferenceCase" title="select a reference case">
+          reference case is 
+          <output id="seriesdiff_PositionSliderOutput">1</output>
+          <input id="seriesdiff_PositionSliderInput", type="range" min="1" max="5" value="1" step="1" oninput="d3.select('#seriesdiff_PositionSliderOutput').text(seriesProperties.series_labels[value-1]); seriesProperties.difference.position=value; updateDisplay();">
+        </label>
+        <div id="diffofdiffcontrols" style="display:none">
+          <label title="select a case C">
+            case C is 
+            <output id="seriesdiffofdiffC_PositionSliderOutput">1</output>
+            <input id="seriesdiffofdiffC_PositionSliderInput", type="range" min="1" max="5" value="1" step="1" oninput="d3.select('#seriesdiffofdiffC_PositionSliderOutput').text(seriesProperties.series_labels[value-1]); seriesProperties.diffofdiff.position_c=value; updateDisplay();">
+          </label>
+          <label title="select a case D">
+            case D is 
+            <output id="seriesdiffofdiffD_PositionSliderOutput">1</output>
+            <input id="seriesdiffofdiffD_PositionSliderInput", type="range" min="1" max="5" value="1" step="1" oninput="d3.select('#seriesdiffofdiffD_PositionSliderOutput').text(seriesProperties.series_labels[value-1]); seriesProperties.diffofdiff.position_d=value; updateDisplay();">
+          </label>
+        </div> <!-- id="diffofdiffcontrols" -->
+        <p><input id="difference_HideNoDiff_Enabled", type="checkbox" onchange="seriesProperties.difference.hidenodiff = this.checked; updateDisplay();"> Only nodes/links with diff shown </p>
+        <label title="max value for color code">
+          color upper bound is 10 ** <output id="seriesdiffMax_PositionSliderOutput">5</output> kton/day
+          <input id="seriesdiffMax_PositionSliderInput", type="range" min="-3" max="7" value="5" step="1" oninput="d3.select('#seriesdiffMax_PositionSliderOutput').text(value); displayProperties.colorscale.max=value; updateDisplay();">
+        </label>
+        <label title="order of magnitude to be color coded">
+          color spans <output id="seriesdiffRange_PositionSliderOutput">5</output> order of magnitude
+          <input id="seriesdiffRange_PositionSliderInput", type="range" min="1" max="5" value="5" step="1" oninput="d3.select('#seriesdiffRange_PositionSliderOutput').text(value); displayProperties.colorscale.range=value; updateDisplay();">
+        </label>
+        <input id="widthfordiff_Enabled" type="checkbox"> edge width for difference 
+      </div> <!-- id="diffcontrols" -->
+    </div> <!-- id="difference" -->
+
+
+  </div><!-- id="panel_series" -->
+
+  <div class="panel", id="panel_display">
+
+    <b>Display properties</b><br />
+
+    <div class="force" id="title"> 
+      <p><label><input id="title_Enabled", type="checkbox" checked onchange="toggleTitlecontrols(); updateDisplay();"> title</label> </p>
+      <div id="titlecontrols">
+        <!-- TODO change font size? allow user to edit title? -->
+      </div>
+
+    </div>
+
+
+    <div class="force" id="label">
+      <p><label><input id="label_Enabled", type="checkbox" checked onchange="toggleLabelcontrols(); updateDisplay();"> label</label> material labels </p>
+      <div id="labelcontrols">
+        <!-- <p><input id="label_UseCrypticName", type="checkbox"         onchange="displayProperties.label.use_cryptic_name = this.checked; updateDisplay();"> use cryptic name</p> -->
+
+        <label title="filter materials to be labeled by flux">
+          threshold
+        </label>
+        <output id="label_FilterSliderOutput"> 50 </output>
+        <input id="label_FilterSliderInput", type="range" min="0" max="100" value="50" step="1" oninput="d3.select('#label_FilterSliderOutput').text(value); displayProperties.label.filter_level = value; updateDisplay();"> 
+        <label title="minimum font size for labels">
+          minimum font size
+        </label>
+        <output id="label_MinSizeSliderOutput"> 2 </output>
+        <input id="label_MinSizeSliderInput", type="range" min="2" max="18" value="2" step="1" oninput="d3.select('#label_MinSizeSliderOutput').text(value); displayProperties.label.minimum_label_size = value; updateDisplay();"> 
+        <p><input id="labelAboveNode_Enabled", type="checkbox" onchange="displayProperties.label.pos_above_node = this.checked; ticked()" checked>label above node</p>
+
+      </div>
+    </div>
+
+    <div class="force" id="barplot">
+      <p><label><input id="barplot_Enabled", type="checkbox" checked onchange="toggleBarplotcontrols();">barchart</label> processes on nodes/edges</p>
+      <div id="barplotcontrols">
+        <p><input id="barplot_1_ActiveInput" type="radio" name="select_barchart" value='plot1' onchange="setActiveBarplot(0);" checked>plot1</p>
+        <p><input id="barplot_2_ActiveInput" type="radio" name="select_barchart" value='plot2' onchange="setActiveBarplot(1);"        >plot2</p>
+        <p>click on node/link generates bar plot of process contributions.  selected plot is overwritten by new node/link's data</p>
+      </div>
+    </div>
+
+
+
+    <div class="force" id="nodepos">
+      <p><label> nodepos </label> node positions </p>
+      <p><input id="showSticky_Enabled2" class="showSticky_Enabled" type="checkbox" onchange="displayProperties.sticky.visible = this.checked; document.getElementsByClassName('showSticky_Enabled').checked = this.checked ; updateDisplay();"> Show/hide stuck nodes</p>
+      <p><input id="verySticky_Enabled" type="checkbox" onchange="setVerySticky(this.checked)" /> Make nodes very sticky</p>
+      <!--<p><input id="verySticky_Enabled" type="checkbox" onchange="                                                   setVerySticky()" /> Make nodes very sticky</p>-->
+        <p class="sticky_desc"> use ctrl+drag to make node stick.  use regular drag to release node </p>
+      <p>
+      <input type="button" value="release all sticky" onclick="releaseSticky(); updateAll();" />
+      </p>
+    </div>
+  </div> <!-- id="panel_display" -->
+
+  <div class="panel", id="panel_save">
+    <b>Save/Load </b><br />
+    <div class="force" id="saveload">
+      <p><label> save/load status</label></p>
+      <p>
+        <!-- <input id="button_SaveImage" type="button" value="save image" onclick="exportImage();" /> -->
+        <input type="button" value="save status" onclick="exportStatus();" /> 
+        <input type="button" value="load status" onclick="importStatus();" />
+      </p>
+      <p>
+      <!--
+        <input id="nodeposFixedOnly_Enabled" type="checkbox" onchange="debugger; d3.select('#nodeposAllNodes_Enabled').property('checked', false); loadOptions.nodepos.all_nodes = this.checked;" checked/>Only fixed nodes pos <br />
+        <input id="nodeposAllNodes_Enabled" type="checkbox" onchange= "d3.select('#nodeposFixedOnly_Enabled').property('checked',  false); loadOptions.nodepos.fixed_only = this.checked;" />All nodes pos and fix them <br />
+        <input id="dropNodes_Enabled" type="checkbox" onchange="loadOptions.dropped_nodes = this.checked;" checked />Load dropped nodes list<br />
+        <input id="importDisplayProperties_Enabled" type="checkbox"  onchange="loadOptions.display_props = this.checked;" />Load other display properties <br />
+        <input id="importForces_Enabled" type="checkbox" onchange="loadOptions.force = this.checked;"  />Load forces <br />
+      -->
+        <input id="nodeposFixedOnly_Enabled" type="checkbox" onchange="toggleLoadStatuscontrols(this);" checked/>Only fixed nodes pos <br />
+        <input id="nodeposAllNodes_Enabled" type="checkbox" onchange= "toggleLoadStatuscontrols(this);" />All nodes pos and fix them <br />
+        <input id="dropNodes_Enabled" type="checkbox" onchange="toggleLoadStatuscontrols(this);" checked />Load dropped nodes list<br />
+        <input id="importDisplayProperties_Enabled" type="checkbox"  onchange="toggleLoadStatuscontrols(this)" checked/>Load other display properties <br />
+        <input id="importForces_Enabled" type="checkbox" onchange="toggleLoadStatuscontrols(this)"  />Load forces <br />
+      </p>
+         
+      <!-- <input type="button" value="load (fx)" onclick="importNodePositions(fxonly=true);" /> -->
+      <!-- <input type="button" value="load (all)" onclick="importNodePositions(fxonly=false);" /> -->
+      <!--    <input type="button" value="load" onclick="importNodePositions(fxonly=false);" /> -->
+  
+    </div>
+    <div class="force" id="saveimage">
+      <p><label> save image </label></p>
+      <p>
+        <input id="button_SaveImage" type="button" value="save PNG (scale=1)" onclick="exportImage(png=true, scale=1);" />
+        <input id="button_SaveImage" type="button" value="save PNG (scale=3)" onclick="exportImage(png=true, scale=3);" />
+        <input id="button_SaveImage" type="button" value="save SVG"           onclick="exportImage(png=false, scale=1);" />
+      </p>
+         
+  
+    </div>
+  </div> <!-- id="panel_save" -->
+
+</div> <!-- id="controls" -->
+
+<svg id='svg'>
+</svg>
+
+<!-- thired party libraries -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/colorbrewer.v1.min.js"></script>
+<script src="https://colorjs.io/dist/color.global.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js" 
+        integrity="sha512-wNH6xsp2n8CfB91nrBtfc4sfLwYPBMjSWVUwQOp60AYYXH6i8yCwuKFZ4rgK2i6pQek/b+bSyR7b01/922IBzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/save-svg-as-png/1.4.17/saveSvgAsPng.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> <!-- for _.merger... -->
+
+
+<!-- implementation of interactive network -->
+<script src="./chemnetworkviz_v23b.js"> </script>
+
+
+<!-- load the network data and run code -->
+<script>
+
+ 
+  // specify one or two input files
+
+  // these are the traditional network file, where reverse node exists without condense them
+  //let fname1 = "../data/chemnetwork_v8_20220909_prepv11_ionnis.json";
+  //let fname1 = "../data/chemnetwork_v8_20220909_prepv12.json";
+  //let fname1 = "../data/chemnetwork_v8_20220909_prepv12_4.json";
+  //let fname1 = "../data/chemnetwork_v8_20220909_prepv12_5.json";
+  let fname1 = "../data/chemnetwork_v8_20220909_prepv12_6.json";
+  //let fname1 = "../data/ref/chemnetwork_v8_20220909_prepv10_pe_case1.json";
+  //let fname2 = "chemnetwork_v8_20220909_prepv11_pet_case1.json";
+
+  // these are new, "oriented" version of network:  dual edges between two nodes (A => B and B => A) are condesned.
+  // But as you said, these reverse phenomena was rare. I saw only two path that happends for PET cases, and it went from large positive to small negative.  
+  // So the revese direction is negligible.  
+  //  
+  // I think the code is working, but i don't see much point of feeding this results.  it would virtually get the same output
+
+  //let fname_oriented1 = "chemnetwork_v8_20220909_prepv11_oriented_petmeoh_case1.json";
+  //let fname_oriented2 = "chemnetwork_v8_20220909_prepv11_oriented_pet_case1.json";
+
+
+  // choose one of four call of main() function
+
+  // traditional application, one series of prices
+  //main(fname1)
+
+  // same as above but using oriented version of data
+  //main(fname_oriented1)
+
+  // passing two set of series of network (case 1 and case s1)
+  // prefix means, "base case 1", "sensitivtity case 1", prepended to the list of prices in the series control panel
+  main(fname1)
+
+  // same as above but oriented dataset
+  //main(fname_oriented1, fname_oriented2, prefix=['S1', 'B1'])  
+
+</script>
+
+</body>
+</html>
+
+<!-- vim: set et sw=2:  -->
