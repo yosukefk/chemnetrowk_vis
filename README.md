@@ -4,7 +4,7 @@ vis tool used for https://doi.org/10.1021/acssuschemeng.3c00990
 Full documentation to be prepared, here is overview of what is included:
 
 * data/
-	Input/intermediate data for network modeling
+	Input/intermediate data for network modeling (Still empty)
 * pyomo/
 	Network model implemented in pyomo/cplex (GAMS version available too)
 * preproc/
